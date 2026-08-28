@@ -106,12 +106,46 @@ def _angle_text(theta: float) -> str:
     return f"{turns:.2f}π"
 
 
+def _lerp_rgb(c0: tuple[int, int, int], c1: tuple[int, int, int], t: float) -> tuple[int, int, int]:
+    return (
+        int(round(c0[0] + (c1[0] - c0[0]) * t)),
+        int(round(c0[1] + (c1[1] - c0[1]) * t)),
+        int(round(c0[2] + (c1[2] - c0[2]) * t)),
+    )
+
+
+def _parse_rgb(spec: str) -> tuple[int, int, int]:
+    inner = spec[spec.find("(") + 1 : spec.find(")")]
+    parts = [int(x.strip()) for x in inner.split(",")[:3]]
+    return parts[0], parts[1], parts[2]
+
+
+def _phase_to_unit(phase: float) -> float:
+    """Map (−π, π] → [0, 1] on the cyclic colorbar. ±π both land on teal."""
+    wrapped = (float(phase) + np.pi) / (2.0 * np.pi)
+    wrapped = wrapped % 1.0
+    if wrapped < 0:
+        wrapped += 1.0
+    return wrapped
+
+
 def phase_to_rgba(phase: float | None, prob: float) -> str:
+    """Same palette as PHASE_CSCALE so bars match the colorbar."""
     if phase is None or prob < 1e-10:
         return "rgba(90,100,120,0.38)"
-    h = (float(phase) / (2 * np.pi)) % 1.0
-    r, g, b = colorsys.hsv_to_rgb(h, 0.72, 0.98)
-    return f"rgba({int(r * 255)},{int(g * 255)},{int(b * 255)},0.95)"
+    u = _phase_to_unit(phase)
+    stops = PHASE_CSCALE
+    for i in range(len(stops) - 1):
+        u0, c0 = stops[i]
+        u1, c1 = stops[i + 1]
+        if u <= u1 or i == len(stops) - 2:
+            span = u1 - u0
+            t = 0.0 if span <= 0 else (u - u0) / span
+            t = min(1.0, max(0.0, t))
+            r, g, b = _lerp_rgb(_parse_rgb(c0), _parse_rgb(c1), t)
+            return f"rgba({r},{g},{b},0.95)"
+    r, g, b = _parse_rgb(stops[-1][1])
+    return f"rgba({r},{g},{b},0.95)"
 
 
 def _sorted_labels(keys) -> list[str]:
