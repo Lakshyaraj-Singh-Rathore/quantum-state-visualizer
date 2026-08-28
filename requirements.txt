@@ -1,0 +1,5 @@
+qiskit>=1.0,<3
+qiskit-aer
+numpy
+plotly
+streamlit
