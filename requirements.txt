@@ -1,5 +1,7 @@
+streamlit>=1.32,<1.45
+numpy>=1.26,<2.2
+pandas>=2.2,<3
+pyarrow>=14,<18
+plotly>=5.18,<6
 qiskit>=1.0,<3
-qiskit-aer
-numpy
-plotly
-streamlit
+qiskit-aer>=0.14,<0.17
