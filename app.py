@@ -22,7 +22,10 @@ import streamlit as st
 from engine import GATE_CATALOG, QuantumEngine, one_qubit_matrix
 from noise import NoiseParams, compare_ideal_noisy
 from visualizer import (
+    CORAL,
+    GOLD,
     PLOT_CONFIG,
+    TEAL,
     amplitude_table,
     circuit_text,
     format_state_ket,
@@ -32,9 +35,10 @@ from visualizer import (
     plot_entanglement,
     plot_exact_vs_shots,
     plot_fidelity,
+    plot_gauge,
     plot_ideal_vs_noisy,
     plot_probabilities,
-    plot_qsphere
+    plot_qsphere,
 )
 
 st.set_page_config(
@@ -548,9 +552,20 @@ def main() -> None:
         if comparison is None:
             st.info("Enable noise to see **purity** of the mixed state and shot leakage.")
         else:
-            plotly_show(plot_fidelity(comparison.purity, None))
-            st.caption("This gauge is **purity** of noisy ρ (1 = still pure).")
-
+            plotly_show(
+                plot_gauge(
+                    comparison.purity,
+                    "Purity",
+                    color=(
+                        TEAL
+                        if comparison.purity > 0.97
+                        else GOLD
+                        if comparison.purity > 0.85
+                        else CORAL
+                    ),
+                    subtitle="Tr(ρ²)  ·  1 = still pure",
+                )
+            )
     tabs = st.tabs(
         [
             "Ideal vs noisy",
