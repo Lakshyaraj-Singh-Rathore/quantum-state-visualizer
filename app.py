@@ -268,7 +268,10 @@ def render_sidebar(engine: QuantumEngine) -> NoiseParams:
             st.rerun()
         st.sidebar.slider("Angle θ (radians)", 0.0, float(2 * np.pi), key="rx_theta")
         theta = float(st.session_state.rx_theta)
-        st.sidebar.caption(f"θ = {theta / np.pi:.3g}π · RX(π) ≡ X up to global phase")
+        st.sidebar.caption(
+            f"θ = {theta / np.pi:.3g}π · live if last gate is this RX/RY/RZ · "
+            "Add gate only the first time"
+        )
         mat = pretty_matrix(gate, theta)
         if mat:
             st.sidebar.code(mat, language="text")
@@ -304,6 +307,14 @@ def render_sidebar(engine: QuantumEngine) -> NoiseParams:
         t_opts = [q for q in q_opts if q not in (c1, c2)]
         t = st.sidebar.selectbox("Target", t_opts, format_func=lambda i: f"q{i}", key="ccx_t")
         qubits = [int(c1), int(c2), int(t)]
+
+    # Live knob: dragging θ edits the last RX/RY/RZ if it matches this gate + qubit
+    if spec["params"] and engine.operations:
+        last = engine.operations[-1]
+        if last.name == gate and list(last.qubits) == list(qubits):
+            ok, msg = engine.set_last_rotation_angle(float(theta))
+            if ok:
+                st.sidebar.caption(f"Live angle — {msg}. Drag θ; don’t Add again.")
 
     if st.sidebar.button("Add gate", type="primary", use_container_width=True):
         ok, msg = engine.add_gate(gate, qubits, params)
