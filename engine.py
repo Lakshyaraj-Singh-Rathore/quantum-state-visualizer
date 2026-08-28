@@ -398,7 +398,19 @@ class QuantumEngine:
         self.operations.append(op)
         self._rebuild()
         return True, f"Added {op.display_label()}."
-
+    def set_last_rotation_angle(self, theta: float) -> tuple[bool, str]:
+        """Live-update θ on the last RX/RY/RZ. No extra gate is appended."""
+        if not self.operations:
+            return False, "No gate to update."
+        op = self.operations[-1]
+        if op.name not in SINGLE_PARAM:
+            return False, "Last gate has no angle."
+        th = float(theta)
+        if op.params and abs(op.params[0] - th) < 1e-15:
+            return True, op.display_label()
+        op.params = [th]
+        self._rebuild()
+        return True, f"Updated {op.display_label()}."
     def load_preset(self, name: str) -> tuple[bool, str]:
         key = name.strip().lower().replace(" ", "_").replace("-", "_")
         presets = {
