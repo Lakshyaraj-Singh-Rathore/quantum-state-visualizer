@@ -172,7 +172,7 @@ A Bloch sphere is omitted on purpose. The Q-sphere is an IBM-style layout of com
 
 ## Author
 
-YOUR NAME
+Lakshyaraj Singh Rathore
 
 This project was built as a student / course project. Simulation uses Qiskit and Qiskit Aer; charts use Plotly; the UI uses Streamlit. Those libraries keep their own licenses.
 
